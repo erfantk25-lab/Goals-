@@ -1,0 +1,14 @@
+variable "resource_group_name" { type = string }
+variable "location" { type = string }
+variable "environment" { type = string }
+variable "project_name" { type = string }
+variable "app_subnet_id" { type = string }
+variable "app_identity_id" { type = string }
+variable "acr_login_server" { type = string }
+variable "image_name" { type = string }
+variable "image_tag" { type = string }
+variable "db_server_fqdn" { type = string }
+variable "db_admin_username" { type = string }
+variable "db_name" { type = string }
+variable "key_vault_uri" { type = string }
+variable "tags" { type = map(string) }
