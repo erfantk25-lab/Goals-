@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         import os
         if os.getenv("TESTING") == "1":
             return "sqlite:///:memory:"
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     # ML Model Settings
     MODEL_PATH: str = "ml/models/model.joblib"

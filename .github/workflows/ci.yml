@@ -29,5 +29,6 @@ jobs:
       - name: Run Pytest Suite
         env:
           PYTHONPATH: .
+          TESTING: "1"
         run: |
           pytest
