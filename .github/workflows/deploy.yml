@@ -1,0 +1,62 @@
+name: Build and Deploy to AKS
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  ACR_NAME: myacr
+  CLUSTER_NAME: aks-goalplanner
+  RESOURCE_GROUP: rg-goalplanner-prod
+  IMAGE_NAME: ca-goalplanner-api
+  NAMESPACE: goalplanner
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.ACR_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest .
+          docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }} --all-tags
+
+      - name: Set AKS Context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          cluster-name: ${{ env.CLUSTER_NAME }}
+
+      - name: Create Namespace if not exists
+        run: |
+          kubectl create namespace ${{ env.NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Update Kubernetes Image Version
+        run: |
+          sed -i "s|myacr.azurecr.io/ca-goalplanner-api:latest|${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}|g" k8s/api/deployment.yaml
+
+      - name: Deploy to Kubernetes
+        run: |
+          # Note: In a real scenario, secrets are applied via SealedSecrets or Azure KeyVault provider
+          kubectl apply -f k8s/infra/configmap.yaml -n ${{ env.NAMESPACE }}
+          kubectl apply -f k8s/infra/ingress.yaml -n ${{ env.NAMESPACE }}
+          kubectl apply -f k8s/api/ -n ${{ env.NAMESPACE }}
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/goalplanner-api -n ${{ env.NAMESPACE }}

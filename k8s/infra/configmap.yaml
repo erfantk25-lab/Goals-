@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+  namespace: goalplanner
+data:
+  PROJECT_NAME: "AI Goal Planner System"
+  API_V1_STR: "/api/v1"
+  POSTGRES_SERVER: "pg-goalplanner-prod.postgres.database.azure.com"
+  POSTGRES_USER: "pgadmin"
+  POSTGRES_DB: "goal_planner"
+  POSTGRES_PORT: "5432"
