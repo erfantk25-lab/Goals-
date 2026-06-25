@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Float
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Float, JSON
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -49,7 +49,7 @@ class GoalPlan(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     goal_id = Column(Integer, ForeignKey("goals.id"), unique=True)
-    plan_data = Column(JSONB, nullable=False) # Stores the 12 steps
+    plan_data = Column(JSON().with_variant(JSONB, "postgresql"), nullable=False) # Stores the 12 steps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     goal = relationship("Goal", back_populates="plan")
