@@ -1,4 +1,4 @@
-from ml.model import GoalDifficultyPredictor
+from ml.training.train import GoalDifficultyPredictor
 
 def test_model_loading_and_prediction():
     predictor = GoalDifficultyPredictor()

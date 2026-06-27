@@ -1,40 +1,26 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  api:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: goal_planner_api
     ports:
       - "8000:8000"
     environment:
-      - POSTGRES_SERVER=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=goal_planner
-      - POSTGRES_PORT=5432
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-    depends_on:
-      postgres:
-        condition: service_healthy
-
-  postgres:
-    image: postgres:15-alpine
-    container_name: goal_planner_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: goal_planner
-    ports:
-      - "5432:5432"
+      - DATABASE_URL=sqlite:///./goal_planner.db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      - ./goal_planner.db:/app/goal_planner.db
+      - ./ml/models:/app/ml/models
 
-volumes:
-  postgres_data:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://backend:8000/api/v1
+    depends_on:
+      - backend

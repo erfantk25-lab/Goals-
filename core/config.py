@@ -15,7 +15,12 @@ class Settings(BaseSettings):
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         import os
         if os.getenv("TESTING") == "1":
-            return "sqlite:///:memory:"
+            return "sqlite:///test.db"
+        
+        # Local development fallback
+        if os.getenv("ENVIRONMENT") != "production":
+            return "sqlite:///goal_planner.db"
+            
         return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
     # ML Model Settings
